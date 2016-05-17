@@ -14,6 +14,8 @@
 #include <unistd.h>
 #include <RF24/RF24.h>
 
+#include "DB.h"
+
 using namespace std;
 //
 // Hardware configuration
@@ -37,9 +39,6 @@ Role role = RolePongBack;
 
 #define BUTTON_PIN 0
 
-// the event counter
-volatile unsigned long counter = 0;
-
 // -------------------------------------------------------------------------
 
 mutex m;
@@ -50,6 +49,8 @@ void myInterrupt(void) {
     printf("myInterrupt\n");
     interruption_cv.notify_one();
 }
+
+
 
 //thread worker that actually read
 void readPayload() {
@@ -87,12 +88,14 @@ void readPayload() {
             radio.write( &payload, sizeof(unsigned long) );
             // Now, resume listening so we catch the next packets.
             radio.startListening();
-            counter = payload;
+            unsigned long cold = payload;
 
             {
                 lock_guard<mutex> lk(m);
+
+                putMeasurement(0, cold);
                 // Spew it
-                printf("Got payload(%d) %lu...\n",sizeof(unsigned long), counter);
+                printf("Got payload(%d) %lu...\n",sizeof(unsigned long), cold);
             }
         }
         //waiting for interruption

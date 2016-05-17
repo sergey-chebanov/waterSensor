@@ -21,12 +21,15 @@ CCFLAGS=-g -std=c++11
 #PROGRAMS = scanner pingtest gettingstarted
 PROGRAMS = read_on_interruption
 #PROGRAMS = read_on_interruption gettingstarted gettingstarted_call_response transfer pingpair_dyn
-SOURCES = ${PROGRAMS:=.cpp}
+SOURCES = read_on_interruption.cpp DB.cpp
 
 all: ${PROGRAMS}
 
+DB: DB.cpp
+	g++ ${CCFLAGS} -Wall $@.cpp -lboost_date_time -lsqlite3 -o $@
+
 ${PROGRAMS}: ${SOURCES}
-	g++ ${CCFLAGS} -Wall $@.cpp -lrf24 -lbcm2835 -lwiringPi -lpthread -o $@
+	g++ ${CCFLAGS} -Wall ${SOURCES} -lrf24 -lbcm2835 -lwiringPi -lpthread -lboost_date_time -lsqlite3 -o $@
 
 clean:
 	rm -rf $(PROGRAMS)
